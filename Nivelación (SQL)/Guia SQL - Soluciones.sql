@@ -54,19 +54,22 @@ OR horas > 60;
 ordenando primero por nombre del departamento y luego por el nombre del empleado, ambos ascendentemente.*/
 
 SELECT departamento.nombre, empleado.nombre
-FROM departamento JOIN empleado ON departamento.numero=nrodpto
+FROM departamento 
+JOIN empleado ON departamento.numero=nrodpto
 ORDER BY departamento.nombre, empleado.nombre;
 
 /*	11)	Listar los números de los proyectos en los que participa Lourdes Perez. (preguntar por el nombre, no por 
 el código). Tener en cuenta que el nombre podría estar con mayúsculas o minúsculas. La consulta debe responder a cualquier combinación de mayúsculas y minúsculas.*/
 SELECT nroproyecto
-FROM empleado JOIN participa ON participa.dni=empleado.dni
+FROM empleado 
+JOIN participa ON participa.dni=empleado.dni
 WHERE UPPER(empleado.nombre) = 'LOURDES PEREZ';
 
 /*12)	Listar los nombres de los proyectos en los que participa Lourdes Perez. (preguntar por el nombre, no por el código). Tener en cuenta que el 
 nombre podría estar con mayúsculas o minúsculas. La consulta debe responder a cualquier combinación de mayúsculas y minúsculas.*/
 SELECT proyecto.nombre
-FROM empleado JOIN participa ON participa.dni=empleado.dni JOIN proyecto
+FROM empleado 
+JOIN participa ON participa.dni=empleado.dni JOIN proyecto
 ON participa.nroproyecto = proyecto.numero
 WHERE UPPER(empleado.nombre) = 'LOURDES PEREZ';
 
@@ -76,44 +79,67 @@ WHERE UPPER(empleado.nombre) = 'LOURDES PEREZ';
  */
  
  SELECT distinct par1.dni dni1,par2.dni dni2
- FROM participa par1 JOIN participa par2 ON par1.nroproyecto=par2.nroproyecto AND par1.dni<par2.dni
+ FROM participa par1 
+ JOIN participa par2 ON par1.nroproyecto=par2.nroproyecto AND par1.dni<par2.dni
  ORDER BY par1.dni;
 
 /*14)	Mostrar los empleados que son jefes y tienen auto. 
 Se debe listar el nombre del jefe y la patente de su auto.*/
 SELECT nombre, patente 
-FROM empleado JOIN auto ON empleado.dni=dniJefe;
+FROM empleado 
+JOIN auto 
+ON empleado.dni=dniJefe;
 
 
 /*15)	Mostrar los empleados que son jefes tengan o no auto. 
 Se debe listar el dni del jefe y la patente de su auto. 
 En caso de no tener auto debe aparecer vacío (NULL)*/
 SELECT dni, patente
-FROM jefe LEFT JOIN auto ON dnijefe=dni;
+FROM jefe 
+LEFT JOIN auto 
+ON dnijefe=dni;
 
 /*	16)	Mostrar los empleados que son jefes tengan o no auto. 
 Se debe listar el nombre del jefe y la patente de su auto. 
 En caso de no tener auto debe aparecer vacío (NULL)*/
 SELECT nombre, patente
-FROM empleado JOIN jefe ON empleado.dni=jefe.dni LEFT JOIN auto ON dnijefe=dni;
+FROM empleado 
+JOIN jefe 
+ON empleado.dni=jefe.dni 
+LEFT JOIN auto 
+ON dnijefe=dni;
 
 
 
 
 /*17) Listar los nombres de los empleados que trabajaron en el proyecto 71 o en el proyecto 84*/
-SELECT DISTINCT nombre FROM empleado JOIN participa ON empleado.dni=participa.dni
+SELECT DISTINCT nombre 
+FROM empleado 
+JOIN participa 
+ON empleado.dni=participa.dni
 WHERE nroproyecto IN (84,71);
+
 /*otra solucion*/
-SELECT DISTINCT nombre FROM empleado JOIN participa ON empleado.dni=participa.dni
+SELECT DISTINCT nombre 
+FROM empleado 
+JOIN participa 
+ON empleado.dni=participa.dni
 WHERE nroproyecto = 84
 OR nroproyecto = 71;
 
 /*18) Listar los nombres de los empleados que trabajaron en el proyecto 25 y en el proyecto 31*/
-SELECT DISTINCT nombre FROM empleado JOIN participa ON empleado.dni=participa.dni
+SELECT DISTINCT nombre 
+FROM empleado 
+JOIN participa 
+ON empleado.dni=participa.dni
 WHERE nroproyecto = 25 
 AND empleado.dni IN (SELECT dni FROM participa WHERE nroproyecto=31);
+
 /*otra solucion*/
-SELECT DISTINCT nombre FROM empleado JOIN participa ON empleado.dni=participa.dni
+SELECT DISTINCT nombre 
+FROM empleado 
+JOIN participa 
+ON empleado.dni=participa.dni
 WHERE nroproyecto = 25 
 AND EXISTS (SELECT * FROM participa WHERE nroproyecto=31 AND dni=empleado.dni);
 
@@ -121,21 +147,26 @@ AND EXISTS (SELECT * FROM participa WHERE nroproyecto=31 AND dni=empleado.dni);
 /* 19) Listar los nombres de los departamentos que no controlan ningún proyecto*/
 SELECT nombre
 FROM departamento
-WHERE numero NOT IN (SELECT nrodpto
-			FROM proyecto);
+WHERE numero 
+NOT IN 
+	(SELECT nrodpto
+	 FROM proyecto);
+
 /*otra solucion*/
 SELECT nombre
 FROM departamento
-WHERE NOT EXISTS (SELECT * FROM proyecto
-		  WHERE departamento.numero=proyecto.nrodpto);
+WHERE NOT EXISTS 
+	(SELECT * FROM proyecto
+	 WHERE departamento.numero=proyecto.nrodpto);
 
 /*	20) Listar los nombres de los empleados que no son jefes.*/ 
 
 SELECT nombre
 FROM empleado
-WHERE NOT EXISTS (SELECT * 
-		  FROM jefe
-		  WHERE jefe.dni=empleado.dni);
+WHERE NOT EXISTS 
+	(SELECT * 
+	 FROM jefe
+	 WHERE jefe.dni=empleado.dni);
 
 
 /*21) 
