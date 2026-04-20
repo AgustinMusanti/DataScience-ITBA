@@ -171,98 +171,134 @@ WHERE NOT EXISTS
 
 /*21) 
 Listar los nombres de los empleados que trabajan para el departamento 
-de Sistemas y que trabajaron en algún proyecto controlado por Recursos Humanos (RRHH). (Utilizar los nombres de los departamentos para la consulta, no los números)
+de Sistemas y que trabajaron en algún proyecto controlado por Recursos Humanos (RRHH). 
+(Utilizar los nombres de los departamentos para la consulta, no los números)
 */
 SELECT DISTINCT empleado.nombre
-FROM empleado JOIN departamento ON empleado.nroDpto=departamento.numero
+FROM empleado 
+JOIN departamento 
+ON empleado.nroDpto=departamento.numero
 WHERE UPPER(departamento.nombre) = 'SISTEMAS'
-AND dni IN ( SELECT dni
-   FROM departamento JOIN proyecto ON nroDpto=departamento.numero JOIN participa ON proyecto.numero=participa.nroproyecto
-   WHERE UPPER(departamento.nombre) = 'RRHH'
+AND dni IN 
+	( SELECT dni
+      FROM departamento 
+	  JOIN proyecto 
+	  ON nroDpto=departamento.numero 
+	  JOIN participa 
+	  ON proyecto.numero=participa.nroproyecto
+      WHERE UPPER(departamento.nombre) = 'RRHH'
    )
 
 
 --Otra
 SELECT DISTINCT empleado.nombre
-FROM empleado JOIN departamento ON empleado.nroDpto=departamento.numero
+FROM empleado 
+JOIN departamento 
+ON empleado.nroDpto=departamento.numero
 WHERE UPPER(departamento.nombre) = 'SISTEMAS'
-AND EXISTS ( SELECT *
-			FROM departamento JOIN proyecto ON nroDpto=departamento.numero JOIN participa ON proyecto.numero=participa.nroproyecto
-			WHERE UPPER(departamento.nombre) = 'RRHH'
-			AND participa.dni=empleado.dni
+AND EXISTS 
+	( SELECT *
+	  FROM departamento 
+	  JOIN proyecto 
+	  ON nroDpto=departamento.numero 
+	  JOIN participa 
+	  ON proyecto.numero=participa.nroproyecto
+	  WHERE UPPER(departamento.nombre) = 'RRHH'
+	  AND participa.dni=empleado.dni
 			)
 
 --
 /* 23) Mostrar la máxima cantidad de horas trabajadas por algún empleado en algún proyecto*/
-SELECT MAX(horas) maxima_cantidad FROM participa;
+SELECT MAX(horas) maxima_cantidad 
+FROM participa;
 
 /*	24) Listar el nombre del empleado que trabajó más horas en un proyecto.*/
 SELECT empleado.nombre
-FROM empleado JOIN participa ON empleado.dni=participa.dni
+FROM empleado 
+JOIN participa 
+ON empleado.dni=participa.dni
 WHERE horas = (SELECT MAX(horas)
-		FROM participa);
+		       FROM participa);
 
 
 /*25) Mostrar el mayor sueldo de la empresa*/
 SELECT MAX(sueldo)
 FROM empleado;
 
-/*26) Mostrar los nombres de los departamentos y el sueldo máximo de cada uno de ellos. No mostrar el departamento si no tiene empleados*/
-SELECT departamento.nombre, max(sueldo) as SueldoMaximo
-FROM departamento JOIN empleado ON departamento.numero=nrodpto
+/*26) Mostrar los nombres de los departamentos y el sueldo máximo de cada uno de ellos. 
+      No mostrar el departamento si no tiene empleados*/
+SELECT departamento.nombre, max(sueldo) AS SueldoMaximo
+FROM departamento 
+JOIN empleado 
+ON departamento.numero=nrodpto
 GROUP BY departamento.numero,departamento.nombre;
 
 /*27) Mostrar el nombre de los empleados que ganan más del 50% del sueldo máximo de la empresa*/
 SELECT nombre
 FROM empleado
 WHERE sueldo > (SELECT MAX(sueldo) * .5
-FROM empleado);
+                FROM empleado);
 
 
 /*28) Listar la cantidad de proyectos en los que trabaja Gastón Felicce y la suma de sus horas.*/
-SELECT COUNT(*) cantidad, SUM(horas) suma
-FROM empleado JOIN participa ON empleado.dni=participa.dni
+SELECT COUNT(*) AS cantidad, SUM(horas) AS suma
+FROM empleado 
+JOIN participa 
+ON empleado.dni=participa.dni
 WHERE UPPER(nombre) = 'GASTÓN FELICCE';
 
 /*29) Listar los nombres de los departamentos que controlan exactamente un proyecto.*/
-SELECT departamento.nombre
-FROM departamento JOIN proyecto ON nrodpto=departamento.numero
-GROUP BY departamento.nombre
+SELECT d.nombre
+FROM departamento AS d
+JOIN proyecto AS p
+ON p.nrodpto=d.numero
+GROUP BY d.nombre
 HAVING COUNT(*) = 1;
 
 /*30) Listar los nombres de los departamentos que controlan exactamente dos proyectos.*/
-SELECT departamento.nombre
-FROM departamento JOIN proyecto ON nrodpto=departamento.numero
-GROUP BY departamento.nombre
+SELECT d.nombre
+FROM departamento AS d
+JOIN proyecto AS p
+ON p.nrodpto=d.numero
+GROUP BY d.nombre
 HAVING COUNT(*) = 2;
 
-/*31) Listar para cada empleado la cantidad de proyectos en los que trabaja. Se debe mostrar el nombre del empleado.*/
-SELECT empleado.nombre, count(participa.nroproyecto) cantidad
-FROM empleado left Join participa ON empleado.dni=participa.dni
-GROUP BY empleado.dni,empleado.nombre;
+/*31) Listar para cada empleado la cantidad de proyectos en los que trabaja. 
+      Se debe mostrar el nombre del empleado.*/
+SELECT e.nombre, COUNT(p.nroproyecto) AS cantidad
+FROM empleado AS e
+LEFT JOIN participa AS p 
+ON e.dni=p.dni
+GROUP BY e.dni, e.nombre;
 
 /*32) Listar para cada empleado la suma de las horas de todos los proyectos en los que trabaja. 
-En caso de no trabajar en ningún proyecto debe aparecer 
-con null en el resultado. Se debe mostrar el nombre del empleado y cado uno de ellos debe aparecer sólo una vez. */
+      En caso de no trabajar en ningún proyecto debe aparecer 
+      con null en el resultado. 
+      Se debe mostrar el nombre del empleado y cado uno de ellos debe aparecer sólo una vez. */
 
-SELECT empleado.nombre, sum(horas) horas
-FROM empleado left Join participa ON empleado.dni=participa.dni
-GROUP BY empleado.dni, empleado.nombre;
+SELECT e.nombre, SUM(horas) AS horas
+FROM empleado AS e 
+LEFT JOIN participa AS p 
+ON e.dni=p.dni
+GROUP BY e.dni, e.nombre;
 
 --en caso de que quisiéramos que el null sea cero, podemos usar la función COALESCE que permite transformar
 --los valores NULL en alguno del mismo tipo que nosotros indiquemos
 
-SELECT empleado.nombre, COALESCE(sum(horas),0) horas
-FROM empleado left Join participa ON empleado.dni=participa.dni
-GROUP BY empleado.dni, empleado.nombre;
-
+SELECT e.nombre, COALESCE(sum(horas),0) AS horas
+FROM empleado AS e
+LEFT JOIN participa AS p
+ON e.dni=p.dni
+GROUP BY e.dni, e.nombre;
 
 
 /*33) Listar los nombres de los proyectos junto 
-con la suma de sus horas ordenados descendentemente por la suma de las horas.*/
-SELECT proyecto.nombre, sum(horas) suma 
-FROM proyecto Join participa ON proyecto.numero=participa.nroproyecto
-GROUP BY proyecto.nombre
+      con la suma de sus horas ordenados descendentemente por la suma de las horas.*/
+SELECT pr.nombre, SUM(horas) AS suma 
+FROM proyecto AS pr
+JOIN participa AS pa 
+ON pr.numero=pa.nroproyecto
+GROUP BY pr.nombre
 ORDER BY suma DESC;
 
 
@@ -270,7 +306,9 @@ ORDER BY suma DESC;
 ordenados descendentemente por la suma de las horas sólo para aquellos proyectos 
 que tuvieron entre 100 Y 200 (inclusive) horas acumuladas.*/
 SELECT proyecto.nombre, sum(horas) suma 
-FROM proyecto Join participa ON proyecto.numero=participa.nroproyecto
+FROM proyecto
+JOIN participa 
+ON proyecto.numero=participa.nroproyecto
 GROUP BY proyecto.nombre
 HAVING sum(horas) >= 100
 AND sum(horas) <= 200
@@ -281,27 +319,39 @@ ORDER BY suma DESC;
 crear la vista MONTOS que contenga 
 el dni y nombre del empleado, su departamento junto con las horas trabajadas en cada proyecto * su correspondiente valor;
 */
---DROP VIEW montos;
-CREATE VIEW montos(dni,nombre,departamento,monto) AS (
+--XXXXXXXX--DROP VIEW montos;
+CREATE VIEW montos(dni,nombre,departamento,monto) 
+AS (
 SELECT empleado.dni, empleado.nombre, departamento.nombre, 1000*horas
-FROM empleado JOIN departamento ON departamento.numero=nrodpto 
-	JOIN participa ON empleado.dni=participa.dni
-	WHERE UPPER(departamento.nombre) !='SISTEMAS'
+FROM empleado 
+JOIN departamento 
+ON departamento.numero=nrodpto 
+JOIN participa
+ON empleado.dni=participa.dni
+WHERE UPPER(departamento.nombre) !='SISTEMAS'
 UNION
 SELECT empleado.dni, empleado.nombre, departamento.nombre, 1200*horas 
-FROM empleado JOIN departamento ON departamento.numero=nrodpto 
+FROM empleado 
+JOIN departamento
+ON departamento.numero=nrodpto 
 	JOIN participa ON empleado.dni=participa.dni
 	WHERE UPPER(departamento.nombre)='SISTEMAS'	);
 
---Se puede utilizar CASE WHEN también
+--Se puede utilizar CASE WHEN también (MAS SENCILLO) .--
 
 --DROP VIEW montos;
-CREATE VIEW montos(dni,nombre,departamento,monto) AS (
-SELECT empleado.dni, empleado.nombre, departamento.nombre, CASE WHEN UPPER(departamento.nombre)='SISTEMAS' THEN 1200*horas 
-																ELSE 1000*horas END
-FROM empleado JOIN departamento ON departamento.numero=nrodpto 
-			  JOIN participa ON empleado.dni=participa.dni);
-
+CREATE VIEW montos(dni,nombre,departamento,monto) 
+AS (
+SELECT e.dni, e.nombre, d.nombre, 
+CASE WHEN UPPER(d.nombre)='SISTEMAS' 
+	 THEN 1200*horas 
+	 ELSE 1000*horas 
+	 END
+FROM empleado AS e 
+JOIN departamento AS d
+ON d.numero=nrodpto 
+JOIN participa AS p
+ON e.dni=p.dni);
 
 SELECT * FROM montos;
 
