@@ -131,3 +131,13 @@ HAVING COUNT(*) > (
         GROUP BY user_id
     ) sub
 );
+
+-- Eventos con precio promedio mayor al promedio global
+SELECT e.nombre
+FROM evento e
+JOIN ticket t ON e.id = t.evento_id
+GROUP BY e.id, e.nombre
+HAVING AVG(t.precio) > (
+    SELECT AVG(precio)
+    FROM ticket
+);
