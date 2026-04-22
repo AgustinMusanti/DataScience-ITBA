@@ -1,3 +1,8 @@
+/* 
+Este modelo se conecta de la siguiente manera:
+usuario → compra → ticket → evento 
+*/
+
 CREATE TABLE evento (
   id integer PRIMARY KEY,
   nombre varchar,
