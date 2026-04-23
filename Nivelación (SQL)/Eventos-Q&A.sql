@@ -73,7 +73,7 @@ HAVING SUM(t.precio) > (
 
 -- Listar todos los usuarios cuyo email contenga “gmail”.
 SELECT * FROM usuario
-WHERE email= LIKE '%gmail%';
+WHERE email LIKE '%gmail%';
 
 -- Mostrar todos los eventos que ocurren después de una fecha dada (por ejemplo: '2024-06-01').
 SELECT * FROM evento
@@ -141,3 +141,68 @@ HAVING AVG(t.precio) > (
     SELECT AVG(precio)
     FROM ticket
 );
+
+-- Mostrar aquellos eventos que tienen tickets de categoría “VIP”
+SELECT DISTINCT e.nombre
+FROM evento e
+JOIN ticket t ON e.id = t.evento_id
+WHERE t.categoria = 'VIP';
+
+-- Tickets que nunca fueron comprados
+SELECT t.id, t.precio
+FROM ticket t
+LEFT JOIN compra c ON t.id = c.ticket_id
+WHERE c.ticket_id IS NULL;
+
+-- Cantidad de compras por usuario (incluyendo los que no compraron)
+SELECT u.nombre, COUNT(c.ticket_id) AS cantidad_compras
+FROM usuario u
+LEFT JOIN compra c ON u.id = c.user_id
+GROUP BY u.nombre;
+
+-- Precio máximo de ticket por evento
+SELECT e.nombre, MAX(t.precio) AS precio_max
+FROM evento e
+JOIN ticket t ON e.id = t.evento_id
+GROUP BY e.nombre
+
+-- Usuarios que compraron más de 2 tickets
+SELECT u.nombre
+FROM usuario u
+JOIN compra c ON u.id = c.user_id
+GROUP BY u.id, u.nombre
+HAVING COUNT(*) > 2;
+
+-- Eventos que tienen más de 5 tickets
+SELECT e.nombre
+FROM evento e
+JOIN ticket t ON e.id = t.evento_id
+GROUP BY e.nombre
+HAVING COUNT(t.id) > 5;
+
+-- Usuarios que compraron tickets más caros que 10.000
+SELECT DISTINCT u.nombre
+FROM usuario u
+JOIN compra c ON u.id = c.user_id
+JOIN ticket t ON c.ticket_id = t.id
+WHERE t.precio > 10000;
+
+-- Evento con el ticket más caro del sistema
+SELECT e.nombre
+FROM evento e
+JOIN ticket t ON e.id = t.evento_id
+WHERE t.precio = (
+    SELECT MAX(precio)
+    FROM ticket
+);
+
+-- Usuarios que compraron al menos un ticket
+SELECT DISTINCT u.nombre
+FROM usuario u
+JOIN compra c ON u.id = c.user_id;
+
+-- Eventos que no tienen tickets
+SELECT e.nombre
+FROM evento e
+LEFT JOIN ticket t ON e.id = t.evento_id
+WHERE t.id IS NULL;
