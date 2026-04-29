@@ -8,11 +8,22 @@ Explicar */
 SELECT  measurement.*, name
 FROM measurement,  item 
 
-/* RTA: por producto cartesiano.
-Cuando se escribe FROM measurement, item sin una condición de JOIN, SQL combina cada fila de measurement con cada fila de item. */
+RTA: por producto cartesiano.
+Cuando se escribe FROM measurement, item sin una condición de JOIN, SQL combina cada fila de measurement con cada fila de item.
 
 Solución:
 
 SELECT measurement.*, item.name
 FROM measurement
 JOIN item ON measurement.item_code = item.code;
+
+
+/* 1.3
+Mostrar del histórico de mediciones solo hasta las 8 más recientes, desplegando el nombre del ítem también */
+
+SELECT m.date, m.station_code, i.name, m.value
+FROM measurement m
+JOIN item i ON m.item_code = i.code
+ORDER BY m.date DESC
+LIMIT 8;
+
