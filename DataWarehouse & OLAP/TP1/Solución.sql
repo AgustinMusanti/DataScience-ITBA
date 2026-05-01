@@ -142,3 +142,108 @@ JOIN measurement m ON i.code = m.item_code
 WHERE m.value <= i.good
 ORDER BY i.code;
 
+
+/* 2.10) Mostrar los nombres de las estaciones que siempre midieron contaminantes que dieron 
+valores aceptables, es decir TODAS sus mediciones arrojaron excelente, good o normal. */
+
+SELECT DISTINCT s.name
+FROM station s
+WHERE s.code NOT IN (
+    SELECT m.station_code
+    FROM measurement m
+    JOIN item i ON m.item_code = i.code
+    WHERE m.value > i.normal
+       OR i.normal IS NULL
+);
+
+/* 3.1)  Mostrar el máximo valor registrado en las mediciones 
+Verificarlo realizando un SELECT ORDER BY DESC con LIMIT 1 */
+
+-- Con agregación
+SELECT MAX(value) AS max_value
+FROM measurement;
+
+-- Verificación
+SELECT value
+FROM measurement
+ORDER BY value DESC
+LIMIT 1; -- equivalente pero más costoso
+
+/* 3.2)  Mostrar cuántos son los contaminantes que tienen alguna medición. Con los datos del 
+ejemplo deberíamos obtener 6 */
+
+SELECT COUNT(DISTINCT item_code) AS total_items_with_measurements
+FROM measurement;
+
+/* 3.3) Calcular por cada estación, cuántas mediciones ha realizado. Es decir, la distribución de 
+mediciones entre las estaciones. Se espera que se despliegue el nombre de la estación junto a 
+dicha cantidad. */
+
+SELECT s.name, COUNT(*) AS total_measurements
+FROM measurement m
+JOIN station s ON m.station_code = s.code
+GROUP BY s.code, s.name
+ORDER BY s.name;
+
+/* 3.4) Ha medido alguna estación más de un contaminante? Mostrar por cada estación cuántos 
+contaminantes diferentes a medido. */
+
+SELECT s.name, COUNT(DISTINCT m.item_code) AS total_contaminants
+FROM measurement m
+JOIN station s ON m.station_code = s.code
+GROUP BY s.code, s.name
+ORDER BY s.name; -- La diferencia con 3.3 es DISTINCT dentro del COUNT y contar item_code en lugar de (*)
+
+/* 3.5) Mostrar los nombres de los contaminantes cuyo valor promedio de sus mediciones fue 
+mayor que 10. Mostrar nombre y dicho promedio. */
+
+SELECT i.name, AVG(m.value) AS avg_value
+FROM measurement m
+JOIN item i ON m.item_code = i.code
+GROUP BY i.code, i.name
+HAVING AVG(m.value) > 10
+ORDER BY avg_value DESC;
+
+/* 3.6) Mostrar aquellas estaciones que en un mismo instante de tiempo midieron más de un 
+contaminante. Desplegar el nombre de dicha estación, la fecha y dicha cantidad. */
+
+SELECT s.name, m.date, COUNT(DISTINCT m.item_code) AS total_contaminants
+FROM measurement m
+JOIN station s ON m.station_code = s.code
+GROUP BY s.code, s.name, m.date
+HAVING COUNT(DISTINCT m.item_code) > 1
+ORDER BY m.date, s.name;
+
+/* 3.7) Se quiere obtener la misma agregación, pero por año. */
+
+SELECT s.name, EXTRACT(YEAR FROM m.date) AS year, COUNT(DISTINCT m.item_code) AS total_contaminants
+FROM measurement m
+JOIN station s ON m.station_code = s.code
+GROUP BY s.code, s.name, EXTRACT(YEAR FROM m.date)
+HAVING COUNT(DISTINCT m.item_code) > 1
+ORDER BY year, s.name;
+
+/* Explicar por qué al ejecutar la siguiente consulta ni siquiera compila */
+SELECT  station.name, DATE, count( item_code) AS qty 
+FROM station , measurement 
+WHERE station.code= station_code  
+GROUP BY station.code, station.name, extract(year from date) 
+HAVING COUNT( item_code) > 1 
+*/
+DATE es una palabra reservada en SQL (es un tipo de dato). Usarla como nombre de columna sin comillas
+hace que el parser se confunda y tire error de sintaxis.
+
+/* 3.8) Se quiere obtener para cada nombre de contaminante la máxima y mínima cantidad 
+registrada. Pero si un contaminante todavía no registra mediciones, igual se lo quiere obtener 
+en el listado, con valor 0 */
+
+SELECT i.name,
+       COALESCE(MAX(m.value), 0) AS max_value,
+       COALESCE(MIN(m.value), 0) AS min_value
+FROM item i
+LEFT JOIN measurement m ON i.code = m.item_code
+GROUP BY i.code, i.name
+ORDER BY i.name;
+
+COALESCE → devuelve el primer valor no nulo de la lista. Cuando un ítem no tiene mediciones, 
+MAX(NULL) y MIN(NULL) devuelven NULL. COALESCE los reemplaza por 0.
