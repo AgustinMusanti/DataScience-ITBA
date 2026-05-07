@@ -228,15 +228,15 @@ ORDER BY c.provincia, ingreso_neto DESC;
 SELECT
     d.descripcion,
     d.porcentaje,
-    COUNT(*)                        AS ventas_con_descuento,
-    SUM(f.monto)                    AS monto_bruto_total,
-    SUM(f.descuento_aplicado)       AS total_descuentado,
-    SUM(f.ingreso_neto)             AS ingreso_neto_total,
-    ROUND(SUM(f.descuento_aplicado) / SUM(f.monto) * 100, 1) AS pct_real_descuento
+    COUNT(*)                        AS 'Ventas con descuento',
+    SUM(f.monto)                    AS 'Monto bruto total',
+    SUM(f.descuento_aplicado)       AS 'Total descontado',
+    SUM(f.ingreso_neto)             AS 'Ingreso neto total',
+    ROUND(SUM(f.descuento_aplicado) / SUM(f.monto) * 100, 1) AS '% descuento real'
 FROM FACT_VENTAS   f
 JOIN DIM_DESCUENTO d ON f.id_descuento = d.id_descuento
 GROUP BY d.id_descuento, d.descripcion, d.porcentaje
-ORDER BY total_descuentado DESC;
+ORDER BY 'Total descontado' DESC;
 
 -- Q6. Demostración SCD-2: historial de ventas de Juan Pérez con ciudad correcta
 SELECT
