@@ -148,7 +148,7 @@ GROUP BY cat.CategoryID, cat.CategoryName,
          EXTRACT(MONTH FROM o.OrderDate)
 ORDER BY cat.CategoryName, Anio, Mes;
 
--- Query 6.9. Moving average over the last 3 months of the sales amount by product category.
+-- Query 6.9. Promedio móvil de los últimos 3 meses del monto de ventas por categoría de producto.
 
 SELECT cat.CategoryName,
        EXTRACT(YEAR FROM o.OrderDate)  AS Anio,
