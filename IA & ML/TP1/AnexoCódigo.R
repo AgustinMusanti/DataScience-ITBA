@@ -1,4 +1,4 @@
-# ANEXO - CÓDIGO R - TP1 + Regresión Lineal
+# ANEXO - CÓDIGO R - TP1
 
 # Parte A - Regresión 
 
@@ -52,38 +52,3 @@ summary(testeo)
 dim(entreno)
 
 dim(testeo) 
-
-# Parte C - Modelo predictivo de Regresión Lineal
-
-# Entrenamiento del modelo lineal con 3 predictores económicos: 
-
-# Limit, Rating e Income 
-
-modelo = lm(Balance ~ Limit + Rating + Income, data = entreno) 
-
-summary(modelo) 
-
-# Predicción sobre el conjunto de testeo 
-
-pred = predict(modelo, newdata = testeo) 
-
-# Métricas de error 
-
-mse = mean((testeo$Balance - pred)^2) 
-
-rmse = sqrt(mse) 
-
-cat("MSE del modelo en testeo:", round(mse, 2), "\n") 
-
-cat("RMSE:", round(rmse, 2), "USD\n") 
-
-# Gráfico predicho vs real 
-
-plot(testeo$Balance, pred, 
-main = "Predicho vs Real - Modelo Lineal", 
-xlab = "Balance real (USD)", 
-ylab = "Balance predicho (USD)", 
-col = "steelblue", 
-pch = 19) 
-
-abline(0, 1, col = "red", lwd = 2, lty = 2)
